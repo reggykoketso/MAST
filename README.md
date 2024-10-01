@@ -1,4 +1,3 @@
-This is an apllication for a resturant.
-The chef has to be able to Add items in the menu and Delete ones' he doesnt want to apear on the menu,
-The app must be able to count the number of items the chef has entered.
-The app created is user friendly and easy to work with.
+Dine with Christoffel.
+Christoffel is a private chef that requires a cross-platform solution compitable with both Android and Apple devices. He seeks a dynamic application for menu management.
+I will be using react native to develop the application that is going to be compitable for both Android and Apple devices.
