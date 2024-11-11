@@ -1,99 +1,235 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, TextInput, Button, FlatList, Alert, TouchableOpacity } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
-export default function App() {
-  const [menuItems, setMenuItems] = useState([]);
-  const [dishName, setDishName] = useState('');
-  const [description, setDescription] = useState('');
-  const [course, setCourse] = useState('Starters');
-  const [price, setPrice] = useState('');
-  const [cartStatus, setCartStatus] = useState('');
+const Stack = createStackNavigator();
 
-  const handleAddMenuItem = () => {
-    if (dishName && description && course && price) {
-      const newItem = { dishName, description, course, price };
-      setMenuItems([...menuItems, newItem]);
-      
-      setDishName('');
-      setDescription('');
-      setCourse('Starters');
-      setPrice('');
+const credentials = {
+  username: 'Regina',
+  password: 'Mothiba',
+};
+
+function LoginScreen({ navigation }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = () => {
+    if (username === credentials.username && password === credentials.password) {
+      navigation.navigate('ChefScreen');
+    } else {
+      navigation.navigate('MenuScreen');
     }
-  };
-
-  const handleRemoveMenuItem = (index) => {
-    const updatedMenuItems = menuItems.filter((_, i) => i !== index);
-    setMenuItems(updatedMenuItems);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Chef's Menu</Text>
+      <Text style={styles.title}>Login</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+      <Button title="Login" onPress={handleLogin} />
+    </View>
+  );
+}
 
+function ChefScreen() {
+  const [menuItem, setMenuItem] = useState('');
+  const [menuDescription, setMenuDescription] = useState('');
+  const [menuPrice, setMenuPrice] = useState('');
+  const [menuList, setMenuList] = useState([]);
+
+  const handleAddItem = () => {
+    if (menuItem && menuDescription && menuPrice) {
+      const newItem = {
+        id: Math.random().toString(),
+        name: menuItem,
+        description: menuDescription,
+        price: parseFloat(menuPrice),
+      };
+      setMenuList([...menuList, newItem]);
+      Alert.alert('Success', `${menuItem} added to the menu!`);
+      setMenuItem('');
+      setMenuDescription('');
+      setMenuPrice('');
+    } else {
+      Alert.alert('Input Error', 'Please fill in all fields');
+    }
+  };
+
+  const handleRemoveItem = (id) => {
+    setMenuList(menuList.filter((item) => item.id !== id));
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Chef Menu Management</Text>
+      <Text>Total Items Added: {menuList.length}</Text>
+      <Text>Add a Menu Item</Text>
       <TextInput
         style={styles.input}
         placeholder="Dish Name"
-        value={dishName}
-        onChangeText={setDishName}
+        value={menuItem}
+        onChangeText={setMenuItem}
       />
-
       <TextInput
         style={styles.input}
         placeholder="Description"
-        value={description}
-        onChangeText={setDescription}
+        value={menuDescription}
+        onChangeText={setMenuDescription}
       />
-
       <TextInput
         style={styles.input}
         placeholder="Price"
-        value={price}
-        onChangeText={setPrice}
         keyboardType="numeric"
+        value={menuPrice}
+        onChangeText={setMenuPrice}
+      />
+      <Button title="Add to Menu" onPress={handleAddItem} />
+
+      <FlatList
+        data={menuList}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.menuItem}>
+            <Text style={styles.menuItemText}>{item.name}</Text>
+            <Text>{item.description}</Text>
+            <Text>Price: R{item.price}</Text>
+            <TouchableOpacity onPress={() => handleRemoveItem(item.id)}>
+              <Text style={styles.removeButton}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
+    </View>
+  );
+}
+
+function MenuScreen({ navigation }) {
+  const menuCategories = {
+    Main: [
+      { dishName: 'Burger', description: 'Juicy beef burger', price: 50 },
+      { dishName: 'Pizza', description: 'Cheese and tomato pizza', price: 75 },
+      { dishName: 'Pasta', description: 'Pasta with white sauce', price: 60 },
+    ],
+    Desserts: [
+      { dishName: 'Ice Cream', description: 'Vanilla ice cream', price: 30 },
+      { dishName: 'Cake', description: 'Chocolate cake', price: 45 },
+    ],
+    Drinks: [
+      { dishName: 'Coke', description: 'Cold drink', price: 15 },
+      { dishName: 'Orange Juice', description: 'Fresh orange juice', price: 20 },
+      { dishName: 'Coffee', description: 'Hot coffee', price: 25 },
+    ],
+  };
+
+  const [selectedCategory, setSelectedCategory] = useState('Main');
+  const [cart, setCart] = useState([]);
+
+  const addToCart = (item) => {
+    if (cart.find((cartItem) => cartItem.dishName === item.dishName)) {
+      Alert.alert('Cart Alert', 'You can only order one item from each category.');
+    } else {
+      setCart([...cart, item]);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Menu - {selectedCategory}</Text>
+
+      <View style={styles.categoryButtons}>
+        {Object.keys(menuCategories).map((category) => (
+          <Button key={category} title={category} onPress={() => setSelectedCategory(category)} />
+        ))}
+      </View>
+
+      <FlatList
+        data={menuCategories[selectedCategory]}
+        keyExtractor={(item) => item.dishName}
+        renderItem={({ item }) => (
+          <View style={styles.menuItem}>
+            <Text style={styles.menuItemText}>{item.dishName}</Text>
+            <Text>{item.description}</Text>
+            <Text>Price: R{item.price}</Text>
+            <Button title="Add to Cart" onPress={() => addToCart(item)} />
+          </View>
+        )}
       />
 
-      <Button title="Add Item To Menu" onPress={handleAddMenuItem} />
+      <Button title="Go to Cart" onPress={() => navigation.navigate('CartScreen', { cart })} />
+    </View>
+  );
+}
 
-      <Text style={styles.cartStatus}>{cartStatus}</Text>
+function CartScreen({ route, navigation }) {
+  const { cart } = route.params;
 
-      <View style={styles.menuContainer}>
-        <Text style={styles.subtitle}>Menu</Text>
-        <Text>Total Items: {menuItems.length}</Text>
+  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  const averageBalance = cart.length > 0 ? (total / cart.length).toFixed(2) : 0;
 
+  const handlePayNow = () => {
+    Alert.alert('Order Confirmed', 'Your order has been confirmed!', [
+      { text: 'OK', onPress: () => navigation.navigate('LoginScreen') },
+    ]);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Cart</Text>
+      {cart.length === 0 ? (
+        <Text>No items in cart.</Text>
+      ) : (
         <FlatList
-          data={menuItems}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
+          data={cart}
+          keyExtractor={(item) => item.dishName}
+          renderItem={({ item }) => (
             <View style={styles.menuItem}>
-              <Text style={styles.menuItemText}>{item.dishName} - {item.course}</Text>
+              <Text style={styles.menuItemText}>{item.dishName}</Text>
               <Text>{item.description}</Text>
               <Text>Price: R{item.price}</Text>
-              <Button title="Remove" onPress={() => handleRemoveMenuItem(index)} />
             </View>
           )}
         />
-      </View>
-
-      <StatusBar style="auto" />
+      )}
+      <Text style={styles.averageText}>Average Balance Due: R{averageBalance}</Text>
+      <Button title="Pay Now" onPress={handlePayNow} />
     </View>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="LoginScreen">
+        <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ title: 'Login' }} />
+        <Stack.Screen name="ChefScreen" component={ChefScreen} options={{ title: 'Chef Menu' }} />
+        <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ title: 'Menu' }} />
+        <Stack.Screen name="CartScreen" component={CartScreen} options={{ title: 'Cart' }} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 20,
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 20,
-    marginBottom: 10,
     textAlign: 'center',
   },
   input: {
@@ -104,21 +240,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
   },
-  menuContainer: {
-    marginTop: 20,
-  },
   menuItem: {
     padding: 10,
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   menuItemText: {
     fontWeight: 'bold',
   },
-  cartStatus: {
-    textAlign: 'center',
+  removeButton: {
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  categoryButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginVertical: 10,
-    fontSize: 16,
-    color: 'green',
+  },
+  averageText: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
