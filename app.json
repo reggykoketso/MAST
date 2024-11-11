@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "MASTPOE",
+    "slug": "MASTPOE",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/platter-2009590_1280.jpg",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/platter-2009590_1280.jpg" ,
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/platter-2009590_1280.jpg" ,
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon":  "./assets/platter-2009590_1280.jpg"
+    }
+  }
+}
